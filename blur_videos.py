@@ -1,3 +1,4 @@
+import time
 from fractions import Fraction
 import subprocess
 import argparse
@@ -29,9 +30,14 @@ def detect(opt):
     videos = os.listdir(opt.input_directory)
     os.makedirs(opt.output_directory, exist_ok=True)
     for video_name in videos:
-        blur_video(
-            os.path.join(opt.input_directory, video_name),
-            opt.output_directory, model, stride, frame_size, kpt_label)
+        j = 0
+        t = time.time()
+        while 1:
+            j += 1
+            blur_video(
+                os.path.join(opt.input_directory, video_name),
+                opt.output_directory, model, stride, frame_size, kpt_label)
+            print(j/(time.time() - t))
 
 
 def read_video_fps_and_duration(video_path: str):
