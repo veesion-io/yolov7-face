@@ -15,7 +15,6 @@ from tqdm import tqdm
 torch.backends.cudnn.enabled = True
 device = torch.device('cuda:0')
 
-
 def detect(opt):
     weights, frame_size, kpt_label = opt.weights, opt.frame_size, opt.kpt_label
     # Load model
@@ -32,7 +31,8 @@ def detect(opt):
     for video_name in tqdm(videos):
         blur_video(
             os.path.join(opt.input_directory, video_name),
-            opt.output_directory, model, stride, frame_size, kpt_label)
+            opt.output_directory, model, stride, frame_size, kpt_label, 
+            opt.augment, opt.conf_thres, opt.iou_thres, opt.classes, opt.agnostic_nms)
 
 
 def read_video_fps_and_duration(video_path: str):
@@ -94,21 +94,21 @@ def pixelate(image, a, b, c, d, grain=5):
     return image
 
 
-def detect_faces(frame, model, kpt_label):
+def detect_faces(frame, model, kpt_label, augment, conf_thres, iou_thres, classes, agnostic_nms):
     frame_tensor = torch.from_numpy(frame).to(device)
     frame_tensor = frame_tensor.half()
     frame_tensor /= 255.0
     if frame_tensor.ndimension() == 3:
         frame_tensor = frame_tensor.unsqueeze(0)
 
-    predictions = model(frame_tensor, augment=opt.augment)[0]
+    predictions = model(frame_tensor, augment=augment)[0]
     predictions = non_max_suppression(
-        predictions, opt.conf_thres, opt.iou_thres, classes=opt.classes,
-        agnostic=opt.agnostic_nms, kpt_label=kpt_label)
+        predictions, conf_thres, iou_thres, classes=classes,
+        agnostic=agnostic_nms, kpt_label=kpt_label)
     return predictions
 
 
-def blur_video(video_path, output_directory, model, stride, frame_size, kpt_label):
+def blur_video(video_path, output_directory, model, stride, frame_size, kpt_label, augment, conf_thres, iou_thres, classes, agnostic_nms):
     video_name = os.path.splitext(os.path.basename(video_path))[0]
     blurred_video_name = os.path.join(
         output_directory, "blurred_" + video_name + ".mp4")
@@ -123,7 +123,7 @@ def blur_video(video_path, output_directory, model, stride, frame_size, kpt_labe
         # BGR to RGB, to 3x416x416
         preprocessed_frame = preprocessed_frame[:, :, ::-1].transpose(2, 0, 1)
         preprocessed_frame = np.ascontiguousarray(preprocessed_frame)
-        predictions = detect_faces(preprocessed_frame, model, kpt_label)
+        predictions = detect_faces(preprocessed_frame, model, kpt_label, augment, conf_thres, iou_thres, classes, agnostic_nms)
         frame = blur_faces(frame, preprocessed_frame, predictions, kpt_label)
         try:
             # Write frame to FFMPEG pipe
@@ -134,6 +134,7 @@ def blur_video(video_path, output_directory, model, stride, frame_size, kpt_labe
             break
         is_frame_valid, frame = video_reader.read()
     video_writer.terminate()  # release previous video writer
+    _, _ = video_writer.communicate()
 
 
 def create_video_writer(fps, shape, output_name):
@@ -157,30 +158,17 @@ def create_video_writer(fps, shape, output_name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str,
-                        default='yolov7-w6-face.pt', help='model.pt path(s)')
-    parser.add_argument('--frame-size', nargs='+', type=int,
-                        default=1280, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float,
-                        default=0.025, help='object confidence threshold')
-    parser.add_argument(
-        '--input-directory', '-i', type=str, required=True,
-        help='The directory containing the videos to be blurred')
-    parser.add_argument(
-        '--output-directory', '-o', type=str, required=True,
-        help='The directory into which we should save the blurred videos')
-    parser.add_argument('--iou-thres', type=float,
-                        default=0.1, help='IOU threshold for NMS')
-    parser.add_argument('--classes', nargs='+', type=int,
-                        help='filter by class: --class 0, or --class 0 2 3')
-    parser.add_argument('--agnostic-nms', action='store_true',
-                        help='class-agnostic NMS')
-    parser.add_argument('--augment', action='store_true',
-                        help='augmented inference')
-    parser.add_argument('--update', action='store_true',
-                        help='update all models')
-    parser.add_argument('--kpt-label', type=int, default=5,
-                        help='number of keypoints')
+    parser.add_argument('--weights', nargs='+', type=str, default='yolov7-w6-face.pt', help='model.pt path(s)')
+    parser.add_argument('--frame-size', nargs='+', type=int, default=1280, help='inference size (pixels)')
+    parser.add_argument('--conf-thres', type=float, default=0.025, help='object confidence threshold')
+    parser.add_argument('--input-directory', '-i', type=str, required=True, help='The directory containing the videos to be blurred')
+    parser.add_argument('--output-directory', '-o', type=str, required=True, help='The directory into which we should save the blurred videos')
+    parser.add_argument('--iou-thres', type=float, default=0.1, help='IOU threshold for NMS')
+    parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')
+    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
+    parser.add_argument('--augment', action='store_true', help='augmented inference')
+    parser.add_argument('--update', action='store_true', help='update all models')
+    parser.add_argument('--kpt-label', type=int, default=5, help='number of keypoints')
     opt = parser.parse_args()
 
     with torch.no_grad():
