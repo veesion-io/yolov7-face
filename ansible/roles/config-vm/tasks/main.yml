@@ -1,0 +1,42 @@
+- name: apt update
+  apt:
+    update_cache: yes
+
+- name: install docker
+  apt:
+    name: docker.io
+    state: present
+
+- name: install curl
+  apt:
+    name: curl
+    state: present
+
+- name: Check if nvidia-container-toolkit source exists
+  stat:
+    path: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+  register: file_stat
+
+- name: load nvidia-container-toolkit source
+  shell: curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+  when: not file_stat.stat.exists
+
+- name: apt update
+  apt:
+    update_cache: yes
+
+- name: install nvidia-container-toolkit
+  apt:
+    name: nvidia-container-toolkit
+    state: present
+
+- name: install nvidia-driver-535
+  apt:
+    name: nvidia-driver-535
+    state: present
+
+- name: Restart docker
+  systemd:
+    state: restarted
+    daemon_reload: true
+    name: docker

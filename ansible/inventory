@@ -1,0 +1,6 @@
+---
+all:
+  hosts:
+    preprod:
+      ansible_host: i-0429d542712579906
+      ansible_user: ubuntu
