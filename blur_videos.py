@@ -111,6 +111,8 @@ def blur_video(video_path, output_directory, model, stride, frame_size, kpt_labe
     video_name = os.path.splitext(os.path.basename(video_path))[0]
     blurred_video_name = os.path.join(
         output_directory, "blurred_" + video_name + ".mp4")
+    if os.path.isfile(blurred_video_name):
+        return
     fps = read_video_fps_and_duration(video_path)["fps"]
     video_reader = cv2.VideoCapture(video_path)
     is_frame_valid, frame = video_reader.read()
