@@ -11,10 +11,9 @@ nvidia-docker run --gpus all --name blurring --security-opt seccomp=unconfined \
 
 cd /workspace/
 pip install gdown
-gdown https://drive.google.com/uc?id=1U_kH7Xa_9-2RK2hnyvsyMLKdYB0h4MJS
+gdown https://drive.google.com/uc?id=1oIaGXFd4goyBvB1mYDK24GLof53H9ZYo
 pip install -r requirements.txt
 pip install seaborn onnxruntime
-
 
 pip uninstall -y opencv-contrib-python \
   && rm -rf /usr/local/lib/python3.10/dist-packages/cv2
@@ -23,10 +22,14 @@ apt update && DEBIAN_FRONTEND=noninteractive apt install ffmpeg -y
 
 ```
 
-# Detect and blur faces : 
+# Detect and blur faces in videos : 
 
 Detect faces with a deep learning model and save blurred videos.
 ```
 python3 blur_videos.py -i videos -o blurred_videos
 ```
+
+# Detect and blur faces on images : 
+
+python3 blur_images.py --source images -o blurred_images
 

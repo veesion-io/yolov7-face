@@ -134,12 +134,11 @@ def blur_video(video_path, output_directory, model, stride, frame_size, kpt_labe
             print(f"FFMPEG STDERR OUTPUT:\n{stderr_output.decode()}")
             break
         is_frame_valid, frame = video_reader.read()
-    video_writer.terminate()  # release previous video writer
     video_writer.stdin.close()
     video_writer.stderr.close()
     video_writer.wait()  # Wait for the subprocess to exit
+    video_writer.terminate()  # release previous video writer
     video_reader.release()
-    torch.cuda.empty_cache()
 
 
 def create_video_writer(fps, shape, output_name):
@@ -164,11 +163,11 @@ def create_video_writer(fps, shape, output_name):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str,
-                        default='yolov7-w6-face.pt', help='model.pt path(s)')
+                        default='yolov7-face.pt', help='model.pt path(s)')
     parser.add_argument('--frame-size', nargs='+', type=int,
-                        default=1280, help='inference size (pixels)')
+                        default=960, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float,
-                        default=0.025, help='object confidence threshold')
+                        default=0.2, help='object confidence threshold')
     parser.add_argument(
         '--input-directory', '-i', type=str, required=True,
         help='The directory containing the videos to be blurred')
@@ -176,7 +175,7 @@ if __name__ == '__main__':
         '--output-directory', '-o', type=str, required=True,
         help='The directory into which we should save the blurred videos')
     parser.add_argument('--iou-thres', type=float,
-                        default=0.1, help='IOU threshold for NMS')
+                        default=0.7, help='IOU threshold for NMS')
     parser.add_argument('--classes', nargs='+', type=int,
                         help='filter by class: --class 0, or --class 0 2 3')
     parser.add_argument('--agnostic-nms', action='store_true',
