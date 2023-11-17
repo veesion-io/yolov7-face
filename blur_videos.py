@@ -134,7 +134,11 @@ def blur_video(video_path, output_directory, model, stride, frame_size, kpt_labe
             print(f"FFMPEG STDERR OUTPUT:\n{stderr_output.decode()}")
             break
         is_frame_valid, frame = video_reader.read()
+    video_writer.stdin.close()
+    video_writer.stderr.close()
+    video_writer.wait()  # Wait for the subprocess to exit
     video_writer.terminate()  # release previous video writer
+    video_reader.release()
 
 
 def create_video_writer(fps, shape, output_name):
