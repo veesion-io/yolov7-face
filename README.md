@@ -23,10 +23,14 @@ apt update && DEBIAN_FRONTEND=noninteractive apt install ffmpeg -y
 
 ```
 
-# Detect and blur faces : 
+# Detect and blur faces in videos : 
 
 Detect faces with a deep learning model and save blurred videos.
 ```
 python3 blur_videos.py -i videos -o blurred_videos
 ```
+
+# Detect and blur faces on images : 
+
+python3 blur_images.py --source images -o blurred_images
 
