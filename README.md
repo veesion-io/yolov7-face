@@ -11,10 +11,9 @@ nvidia-docker run --gpus all --name blurring --security-opt seccomp=unconfined \
 
 cd /workspace/
 pip install gdown
-gdown https://drive.google.com/uc?id=1U_kH7Xa_9-2RK2hnyvsyMLKdYB0h4MJS
+gdown https://drive.google.com/uc?id=1oIaGXFd4goyBvB1mYDK24GLof53H9ZYo
 pip install -r requirements.txt
 pip install seaborn onnxruntime
-
 
 pip uninstall -y opencv-contrib-python \
   && rm -rf /usr/local/lib/python3.10/dist-packages/cv2

@@ -163,11 +163,11 @@ def create_video_writer(fps, shape, output_name):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str,
-                        default='yolov7-w6-face.pt', help='model.pt path(s)')
+                        default='yolov7-face.pt', help='model.pt path(s)')
     parser.add_argument('--frame-size', nargs='+', type=int,
-                        default=1280, help='inference size (pixels)')
+                        default=960, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float,
-                        default=0.025, help='object confidence threshold')
+                        default=0.2, help='object confidence threshold')
     parser.add_argument(
         '--input-directory', '-i', type=str, required=True,
         help='The directory containing the videos to be blurred')
@@ -175,7 +175,7 @@ if __name__ == '__main__':
         '--output-directory', '-o', type=str, required=True,
         help='The directory into which we should save the blurred videos')
     parser.add_argument('--iou-thres', type=float,
-                        default=0.1, help='IOU threshold for NMS')
+                        default=0.7, help='IOU threshold for NMS')
     parser.add_argument('--classes', nargs='+', type=int,
                         help='filter by class: --class 0, or --class 0 2 3')
     parser.add_argument('--agnostic-nms', action='store_true',
